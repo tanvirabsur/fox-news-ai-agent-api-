@@ -1,0 +1,21 @@
+{
+  "name": "fox-news-ai-agent-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.15.0",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "groq-sdk": "^1.1.2",
+    "node-cron": "^4.2.1",
+    "rss-parser": "^3.13.0"
+  }
+}
