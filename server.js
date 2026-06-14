@@ -1,5 +1,7 @@
+require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const adminRouter = require('./Routes/Admin.routes');
+const mongoose = require('mongoose');
 
 const app = express(); 
 const PORT = 8080; 
@@ -9,6 +11,10 @@ app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-enco
 
 app.use('/api', require('./controllers/user.routes')); 
 app.use('/admin', adminRouter);
+
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 app.get('/', (req,res) => {
     res.send('server is getting hotter');
