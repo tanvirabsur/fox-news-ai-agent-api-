@@ -7,7 +7,7 @@ const {
     user,
     pendingArticles
 } = require('../controllers/admin.dashboard');
-const { CreateManualArticle, CreateArticalWithAI } = require('../controllers/create.artical');
+const { CreateManualArticle, CreateArticalWithAI, exploreSourceArticles } = require('../controllers/create.artical');
 
 adminRouter.get('/dashboard', Dashboard)
 adminRouter.get('/total-blogs', TotallBlogs)
@@ -17,5 +17,6 @@ adminRouter.get('/create-ai-article', CreateArticalWithAI);
 adminRouter.get('/specific-article/:id', specificArticle);
 adminRouter.get('/user/:id', user);
 adminRouter.get('/pending-articles',pendingArticles);
+adminRouter.get('/explore-source-articles', exploreSourceArticles);
 
 module.exports = adminRouter;
