@@ -1,4 +1,6 @@
 const cheerio = require("cheerio");
+const axios = require("axios");
+
 
 async function GetApprovedNews(urls) {
     const results = await Promise.allSettled(

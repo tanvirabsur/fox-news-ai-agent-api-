@@ -1,4 +1,12 @@
+const { v4: uuidv4 } = require("uuid");
 const { GetApprovedNews } = require("./Approved.artical");
+const Groq = require("groq-sdk");
+const slugify = require("slugify");
+
+
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+});
 
 async function RewriteArticle(article) {
     try {
@@ -47,34 +55,25 @@ ${article.content}
 
         return {
             id: uuidv4(),
-
             title: aiData.title,
-
             slug: slugify(aiData.title, {
                 lower: true,
                 strict: true,
             }),
-
             link: article.url,
-
             thumbnail: article.thumbnail,
-
             content: aiData.content,
-
             excerpt: aiData.excerpt,
-
             category:
                 aiData.category || "International",
 
             isFeatured: false,
-
             readingTime: `${Math.max(
                 1,
                 Math.ceil(
                     aiData.content.split(" ").length / 200
                 )
             )} min read`,
-
             author: {
                 name: "Tanvir AI Bot",
                 role: "AI Journalist",
@@ -82,7 +81,6 @@ ${article.content}
                     "https://i.pravatar.cc/150?u=tanvir-ai",
                 bio: "An automated AI agent specializing in real-time world news and deep analysis.",
             },
-
             meta: {
                 views: 0,
                 status: "published",
@@ -92,17 +90,14 @@ ${article.content}
                     "AI Generated",
                 ],
             },
-
             published_at: article.publishedAt,
-
             scraped_at: new Date().toISOString(),
         };
     } catch (error) {
         console.log(
             `AI Rewrite Failed: ${article.url}`,
             error.message
-        );
-
+        )
         return null;
     }
 }

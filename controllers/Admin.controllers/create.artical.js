@@ -1,15 +1,8 @@
 require('dotenv').config(); // Load environment variables from .env file
-const Groq = require("groq-sdk");
 const RSSParser = require("rss-parser");
-const axios = require("axios");
-const slugify = require("slugify");
-const { v4: uuidv4 } = require("uuid");
 const { GetApprovedNews } = require('./Approved.artical');
 const { RewriteArticle, GenerateSummaryWithGroq } = require('./AI.rewriter');
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-});
 
 const parser = new RSSParser();
 
@@ -17,9 +10,8 @@ const sourceUrls = [
     "https://www.bbc.com/news/articles/c9824e0rz75o?at_medium=RSS&at_campaign=rss",
     "https://www.bbc.com/news/articles/cd952n4qz2qo?at_medium=RSS&at_campaign=rss",
     "https://www.bbc.com/news/articles/c6217106px6o?at_medium=RSS&at_campaign=rss",
-    "https://www.bbc.com/news/articles/c20ygjem17zo?at_medium=RSS&at_campaign=rss",
-    "https://www.bbc.com/news/articles/c8623n5pq2vo?at_medium=RSS&at_campaign=rss",
 ];
+
 
 async function createArticleFromRSS(url) {
     try {
@@ -28,8 +20,7 @@ async function createArticleFromRSS(url) {
         console.error("RSS Error:", error.message);
         return null;
     }
-}
-
+};
 
 
 const CreateArticalWithAI = async (req, res) => {
@@ -47,6 +38,11 @@ const CreateArticalWithAI = async (req, res) => {
         });
     }
 };
+
+const CreateManualArticle = async (req, res) => {
+    // Logic to create a manual article
+    res.send('Manual article creation endpoint');
+}
 
 const exploreSourceArticles = async (req, res) => {
     try {
@@ -68,8 +64,10 @@ const exploreSourceArticles = async (req, res) => {
     }
 };
 
+
 module.exports = {
     CreateArticalWithAI,
     createArticleFromRSS,
     exploreSourceArticles,
+    CreateManualArticle
 };

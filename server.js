@@ -13,16 +13,17 @@ app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-enco
 app.use('/api', require('./controllers/User.controllers/user.routes')); 
 app.use('/admin', adminRouter);
 
-// mongoose.connect(process.env.MONGODB_URI)
-// .then(() => console.log('Connected to MongoDB'))
-// .catch((err) => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGODB_URI, {
+    dbName: 'Articals',
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 app.get('/', (req,res) => {
 
     res.send('server is getting hotter');
-})
-
+});
 
 app.listen(PORT, () => {
     console.log(`server is running on http://localhost:${PORT}`)
-})
+});
