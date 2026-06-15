@@ -12,7 +12,7 @@ const { CreateManualArticle, CreateArticalWithAI, exploreSourceArticles } = requ
 adminRouter.get('/dashboard', Dashboard)
 adminRouter.get('/total-blogs', TotallBlogs)
 adminRouter.get('/all-users', AllUsers)
-adminRouter.get('/create-manual-article', CreateManualArticle);
+// adminRouter.get('/create-manual-article', CreateManualArticle);
 adminRouter.get('/create-ai-article', CreateArticalWithAI);
 adminRouter.get('/specific-article/:id', specificArticle);
 adminRouter.get('/user/:id', user);

@@ -1,40 +1,37 @@
-const Groq = require('groq-sdk');
-const RSSParser = require('rss-parser');
-const { default: axios } = require('axios');
-const cheerio = require('cheerio');
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+require('dotenv').config(); // Load environment variables from .env file
+const Groq = require("groq-sdk");
+const RSSParser = require("rss-parser");
+const axios = require("axios");
+const cheerio = require("cheerio");
+const slugify = require("slugify");
+const { v4: uuidv4 } = require("uuid");
+
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+});
+
 const parser = new RSSParser();
-const uuid = require('uuid');
-const createArticleFromRSS = async (url, role) => {
+
+const sourceUrls = [
+    "https://www.bbc.com/news/articles/c9824e0rz75o?at_medium=RSS&at_campaign=rss",
+    "https://www.bbc.com/news/articles/cd952n4qz2qo?at_medium=RSS&at_campaign=rss",
+    "https://www.bbc.com/news/articles/c6217106px6o?at_medium=RSS&at_campaign=rss",
+    "https://www.bbc.com/news/articles/c20ygjem17zo?at_medium=RSS&at_campaign=rss",
+    "https://www.bbc.com/news/articles/c8623n5pq2vo?at_medium=RSS&at_campaign=rss",
+];
+
+async function createArticleFromRSS(url) {
     try {
-        const feed = await parser.parseURL(url);
-
-        return feed;
-
+        return await parser.parseURL(url);
     } catch (error) {
-        console.error('Error fetching RSS feed:', error);
+        console.error("RSS Error:", error.message);
         return null;
     }
 }
 
-
-const sourceUrls = [
-    'https://www.bbc.com/news/articles/c9824e0rz75o?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/cd952n4qz2qo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/c6217106px6o?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/c20ygjem17zo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/c8623n5pq2vo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/videos/crkvek3dnrgo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/c892xnwg5vlo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/sport/football/articles/c79y10r2plzo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/c14yn10jzyeo?at_medium=RSS&at_campaign=rss',
-    'https://www.bbc.com/news/articles/cwy24v72n19o?at_medium=RSS&at_campaign=rss'
-]
-
-
-async function GetApprovedNews(url) {
+async function GetApprovedNews(urls) {
     const results = await Promise.allSettled(
-        url.map((url) => axios.get(url))
+        urls.map((url) => axios.get(url))
     );
 
     const articles = [];
@@ -42,14 +39,19 @@ async function GetApprovedNews(url) {
     for (let i = 0; i < results.length; i++) {
         const result = results[i];
 
-        if (result.status === "fulfilled") {
+        if (result.status !== "fulfilled") {
+            console.log(`Failed: ${urls[i]}`);
+            continue;
+        }
+
+        try {
             const html = result.value.data;
 
             const $ = cheerio.load(html);
 
             let rawContent = "";
 
-            $("p").each((i, el) => {
+            $("p").each((_, el) => {
                 const text = $(el).text().trim();
 
                 if (text.length > 50) {
@@ -57,77 +59,202 @@ async function GetApprovedNews(url) {
                 }
             });
 
+            const title =
+                $("h1").first().text().trim() ||
+                "Untitled News";
+
+            const thumbnail =
+                $('meta[property="og:image"]').attr("content") ||
+                "";
+
+            const publishedAt =
+                $('meta[property="article:published_time"]').attr(
+                    "content"
+                ) || new Date().toUTCString();
+
             articles.push({
-                url: url[i],
+                url: urls[i],
+                title,
+                thumbnail,
+                publishedAt,
                 content: rawContent,
             });
-        } else {
-            articles.push({
-                url: url[i],
-                error: result.reason.message,
-            });
+        } catch (error) {
+            console.log(
+                `Parsing failed for ${urls[i]}`,
+                error.message
+            );
         }
     }
 
     return articles;
 }
 
-async function GenerateSummaryWithGroq(content) {
 
-    const chatCompletion = await groq.chat.completions.create({
-        messages: [
-            {
-                role: "system",
-                content: `You are an expert news journalist. Your task is to rewrite the provided news article for a premium news website. 
-                    Guidelines:
-                    - Write a catchy new headline.
-                    - Rewrite the entire story in your own professional words (avoid plagiarism).
-                    - Make it engaging and easy to read.
-                    - Tone: Professional and Editorial.`
-            },
-            {
-                role: "user",
-                content: `Original Title: ${latestNews.title}\n\nFull Scraped Content:\n${rawContent}`
-            }
-        ],
-        model: "llama-3.3-70b-versatile", // free version of Llama 3 with 8B parameters and 8192 context length, you can choose other models as needed
-        temperature: 0.7, // this controls the creativity of the output, you can adjust it as needed
-    });
-
-
-}
-
-const CreateManualArticle = async (req, res) => {
-    res.send('Article is created manually!');
-};
-
-const CreateArticalWithAI = async (req, res) => {
-
-    const article = await GetApprovedNews(sourceUrls)
-
-    res.json({ total: article.length, articles: article })
-}
-
-const exploreSourceArticles = async (req, res) => {
-
+async function RewriteArticle(article) {
     try {
-        const article = await createArticleFromRSS('https://feeds.bbci.co.uk/news/world/rss.xml', 'editor')
-        res.json({
-            total: article.items.length,
-            article: article.items.map(item => ({ title: item.title, link: item.link }))
-        })
+        const completion =
+            await groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are an expert journalist.Return ONLY valid JSON.
+                     {
+                   "title": "",
+                      "content": "",
+                     "excerpt": "",
+                   "category": "International"
+                  }
 
+                        Rules:
+               - Create a completely rewritten news article.
+- No plagiarism.
+- Professional editorial tone.
+- Create an attractive headline.
+- Excerpt should be under 200 characters.
+`
+                    },
+                    {
+                        role: "user",
+                        content: `
+Original Title:
+${article.title}
+
+Article Content:
+${article.content}
+`
+                    }
+                ],
+                model: "llama-3.3-70b-versatile",
+                temperature: 0.7,
+                response_format: {
+                    type: "json_object"
+                }
+            });
+
+        const aiData = JSON.parse(
+            completion.choices[0].message.content
+        );
+
+        return {
+            id: uuidv4(),
+
+            title: aiData.title,
+
+            slug: slugify(aiData.title, {
+                lower: true,
+                strict: true,
+            }),
+
+            link: article.url,
+
+            thumbnail: article.thumbnail,
+
+            content: aiData.content,
+
+            excerpt: aiData.excerpt,
+
+            category:
+                aiData.category || "International",
+
+            isFeatured: false,
+
+            readingTime: `${Math.max(
+                1,
+                Math.ceil(
+                    aiData.content.split(" ").length / 200
+                )
+            )} min read`,
+
+            author: {
+                name: "Tanvir AI Bot",
+                role: "AI Journalist",
+                avatar:
+                    "https://i.pravatar.cc/150?u=tanvir-ai",
+                bio: "An automated AI agent specializing in real-time world news and deep analysis.",
+            },
+
+            meta: {
+                views: 0,
+                status: "published",
+                tags: [
+                    "World News",
+                    "Breaking",
+                    "AI Generated",
+                ],
+            },
+
+            published_at: article.publishedAt,
+
+            scraped_at: new Date().toISOString(),
+        };
     } catch (error) {
-        console.error('Error exploring source articles:', error);
-        res.status(500).json({ error: 'Failed to explore source articles' });
+        console.log(
+            `AI Rewrite Failed: ${article.url}`,
+            error.message
+        );
+
+        return null;
     }
 }
 
+async function GenerateSummaryWithGroq(urls) {
+    const approvedNews = await GetApprovedNews(urls);
 
+    const finalArticles = [];
+
+    for (const article of approvedNews) {
+        const rewritten = await RewriteArticle(article);
+
+        if (rewritten) {
+            finalArticles.push(rewritten);
+        }
+    }
+
+    return {
+        total: finalArticles.length,
+        articles: finalArticles,
+    };
+}
+
+const CreateArticalWithAI = async (req, res) => {
+    try {
+        const result =
+            await GenerateSummaryWithGroq(sourceUrls);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const exploreSourceArticles = async (req, res) => {
+    try {
+        const feed = await createArticleFromRSS(
+            "https://feeds.bbci.co.uk/news/world/rss.xml"
+        );
+
+        res.json({
+            total: feed.items.length,
+            articles: feed.items.map((item) => ({
+                title: item.title,
+                link: item.link,
+            })),
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: "Failed to explore source articles",
+        });
+    }
+};
 
 module.exports = {
-    CreateManualArticle,
     CreateArticalWithAI,
     createArticleFromRSS,
-    exploreSourceArticles
+    exploreSourceArticles,
 };
