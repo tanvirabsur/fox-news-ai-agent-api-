@@ -2,7 +2,7 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const adminRouter = require('./Routes/Admin.routes');
 const mongoose = require('mongoose');
-const { createArticleFromRSS } = require('./controllers/create.artical');
+const { createArticleFromRSS } = require('./controllers/Admin.controllers/create.artical');
 
 const app = express(); 
 const PORT = 8080; 
@@ -10,7 +10,7 @@ const PORT = 8080;
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded bodies
 
-app.use('/api', require('./controllers/user.routes')); 
+app.use('/api', require('./controllers/User.controllers/user.routes')); 
 app.use('/admin', adminRouter);
 
 // mongoose.connect(process.env.MONGODB_URI)

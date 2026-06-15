@@ -6,8 +6,8 @@ const {
     specificArticle,
     user,
     pendingArticles
-} = require('../controllers/admin.dashboard');
-const { CreateManualArticle, CreateArticalWithAI, exploreSourceArticles } = require('../controllers/create.artical');
+} = require('../controllers/Admin.controllers/admin.dashboard');
+const { CreateManualArticle, CreateArticalWithAI, exploreSourceArticles } = require('../controllers/Admin.controllers/create.artical');
 
 adminRouter.get('/dashboard', Dashboard)
 adminRouter.get('/total-blogs', TotallBlogs)
