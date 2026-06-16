@@ -29,13 +29,31 @@ const AllUsers = async (req, res) => {
 const specificArticle = async (req, res) => {
     const { id } = req.params;
     // Logic to fetch specific article by ID
-    res.send(`This is the article with ID: ${id}`);
+    const article = await articals.findOne({ id: id });
+    if (!article) {
+        return res.status(404).json({ message: 'Article not found' });
+    }
+    res.json(article);
 }
 
 const user = async (req, res) => {
     const { id } = req.params;
     // Logic to fetch specific user by ID
-    res.send(`This is the user with ID: ${id}`);
+    const user = await User.findOne({ id: id });
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+}
+
+const deleteArtical = async (req, res) => {
+    const { id } = req.params;
+    // Logic to delete specific article by ID
+    const article = await articals.findOneAndDelete({ id: id });
+    if (!article) {
+        return res.status(404).json({ message: 'Article not found' });
+    }
+    res.json({ message: 'Article deleted successfully' });
 }
 
 
@@ -50,5 +68,6 @@ module.exports = {
     AllUsers,
     specificArticle,
     user,
+    deleteArtical,
     pendingArticles
 } 

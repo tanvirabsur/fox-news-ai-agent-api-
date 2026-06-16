@@ -5,7 +5,8 @@ const {
     AllUsers,
     specificArticle,
     user,
-    pendingArticles
+    pendingArticles,
+    deleteArtical
 } = require('../controllers/Admin.controllers/admin.dashboard');
 const { CreateManualArticle, CreateArticalWithAI, exploreSourceArticles } = require('../controllers/Admin.controllers/create.artical');
 
@@ -18,5 +19,6 @@ adminRouter.get('/specific-article/:id', specificArticle);
 adminRouter.get('/user/:id', user);
 adminRouter.get('/pending-articles',pendingArticles);
 adminRouter.get('/explore-source-articles', exploreSourceArticles);
+adminRouter.delete('/delete-article/:id', deleteArtical);
 
 module.exports = adminRouter;

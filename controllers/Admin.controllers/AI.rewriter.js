@@ -83,7 +83,7 @@ ${article.content}
             },
             meta: {
                 views: 0,
-                status: "published",
+                status: "pending",
                 tags: [
                     "World News",
                     "Breaking",
