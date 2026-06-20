@@ -23,3 +23,12 @@ const createUser = async (req,res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+const user = async (req,res) => {
+    res.status(200).json({ message: 'User route is working' });
+}
+
+module.exports = {
+    createUser,
+    user
+}
