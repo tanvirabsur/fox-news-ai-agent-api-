@@ -7,7 +7,7 @@ const { createArticleFromRSS } = require('./controllers/Admin.controllers/create
 
 
 const app = express(); 
-const PORT = 8080; 
+const PORT = process.env.APP_PORT || 8080; 
 
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded bodies
@@ -17,6 +17,7 @@ app.use('/admin', adminRouter);
 
 mongoose.connect(process.env.MONGODB_URI, {
     dbName: 'Articals',
+    dbName: 'Fox-user',
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));
