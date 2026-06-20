@@ -22,7 +22,9 @@ const registerUser = async (req, res) => {
     //     });
     // }
 
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
 
     // const user = await User.create({
     //     name,
@@ -34,7 +36,8 @@ const registerUser = async (req, res) => {
         success: true,
         message: "Registration successful",
         data: payload,
-        password: hashedPassword
+        password: hashedPassword, 
+        isMatch: isMatch
     });
 
     } catch (error) {
