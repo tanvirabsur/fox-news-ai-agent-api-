@@ -33,12 +33,12 @@ const verifyEmail = async (req, res) => {
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.VERIFY_EMAIL_SECRET,
+        pass: process.env.APP_PASSWORD,
     },
 });
 
-export const sendVerificationEmail = async (
+const sendVerificationEmail = async (
     email,
     token
 ) => {
@@ -48,7 +48,7 @@ export const sendVerificationEmail = async (
         `${process.env.CLIENT_URL} /verify-email/${token} `;
 
     await transporter.sendMail({
-        from: `"My App" < ${process.env.EMAIL_USER}> `,
+        from: `"My App" < ${process.env.VERIFY_EMAIL_SECRET}> `,
         to: email,
         subject: "Verify Your Email",
 

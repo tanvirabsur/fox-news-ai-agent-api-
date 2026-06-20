@@ -1,54 +1,68 @@
+const {UserModel} = require('../../Models/user.model');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const { sendVerificationEmail } = require('./email.verify');
+
 
 const registerUser = async (req, res) => {
-    try {
-        const payload = req.body || req.query || {};
-        const { name, email, password } = payload;
 
-        if (!name || !email || !password) {
+    try {
+
+        const { name, email, password } = req.query || req.body || {};
+
+        const existingUser = await UserModel.findOne({ email });
+
+        if (existingUser) {
             return res.status(400).json({
                 success: false,
-                message: 'name, email, and password are required'
+                message: "Email already exists"
             });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 12);
 
-    // const existingUser = await User.findOne({ email });
+        const verificationToken = crypto
+            .randomBytes(32)
+            .toString("hex");
 
-    // if (existingUser) {
-    //     return res.status(400).json({
-    //         success: false,
-    //         message: "User already exists"
-    //     });
-    // }
+        const profilePicture =
+            req.file?.path || "";
+
+        const user = await UserModel.create({
+            name,
+            email,
+            password: hashedPassword,
+            profilePicture,
+            verificationToken
+        });
+
+        // Send verification email here 
+
+        // Send Verification Email 
+        await sendVerificationEmail(
+            user.email,
+            verificationToken
+        );
 
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-
-    // const user = await User.create({
-    //     name,
-    //     email,
-    //     password: hashedPassword
-    // });
-
-    res.status(201).json({
-        success: true,
-        message: "Registration successful",
-        data: payload,
-        password: hashedPassword, 
-        isMatch: isMatch
-    });
+        res.status(201).json({
+            success: true,
+            message:
+                "Registration successful. Please verify your email.",
+        });
 
     } catch (error) {
+
         res.status(500).json({
             success: false,
             message: error.message
         });
+
     }
+
 
 };
 
 module.exports = {
     registerUser
-};
+}
