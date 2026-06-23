@@ -1,10 +1,9 @@
-const { registerUser } = require('../controllers/Auth.controller/create.user');
-const { user } = require('../controllers/User.controllers/user.controll');
-
 const UserRouter = require('express').Router();
 
+const { user } = require('../controllers/User.controllers/user.controll');
+
 UserRouter.get('/user', user);
-UserRouter.post('/create-user', registerUser);
+
 
 
 module.exports = {

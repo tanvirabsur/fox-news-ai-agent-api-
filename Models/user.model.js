@@ -41,6 +41,21 @@ const userSchema = new mongoose.Schema(
             default: null
         },
 
+        verificationTokenExpiry: {
+            type: Date,
+            default: null
+        },
+
+        loginAttempts: {
+            type: Number,
+            default: 0
+        },
+
+        lockUntil: {
+            type: Date,
+            default: null
+        },
+
     },
     {
         timestamps: true

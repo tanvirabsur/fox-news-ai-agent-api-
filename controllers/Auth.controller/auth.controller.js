@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-
+const { UserModel } = require('../../Models/user.model');
+const bcrypt = require('bcrypt');
 
 const loginUser = async (req, res) => {
 
@@ -15,12 +16,28 @@ try {
         });
     }
 
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
         return res.status(404).json({
             success: false,
             message: "User not found"
+        });
+    }
+
+    // Check if account is locked due to failed attempts
+    if (user.lockUntil && user.lockUntil > new Date()) {
+        return res.status(429).json({
+            success: false,
+            message: "Account temporarily locked. Try again later"
+        });
+    }
+
+    // Check if email is verified
+    if (!user.isVerified) {
+        return res.status(403).json({
+            success: false,
+            message: "Please verify your email before logging in"
         });
     }
 
@@ -30,11 +47,26 @@ try {
     );
 
     if (!isMatch) {
+        // Track failed login attempts
+        user.loginAttempts = (user.loginAttempts || 0) + 1;
+        
+        // Lock account after 5 failed attempts for 15 minutes
+        if (user.loginAttempts >= 5) {
+            user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+        }
+        
+        await user.save();
+        
         return res.status(400).json({
             success: false,
             message: "Invalid credentials"
         });
     }
+
+    // Reset login attempts on successful login
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
 
     const token = jwt.sign(
         {

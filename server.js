@@ -4,6 +4,7 @@ const adminRouter = require('./Routes/Admin.routes');
 const { UserRouter } = require('./Routes/User.routes');
 const mongoose = require('mongoose');
 const { createArticleFromRSS } = require('./controllers/Admin.controllers/create.artical');
+const { AuthRouter } = require('./Routes/auth.route');
 
 
 const app = express(); 
@@ -14,7 +15,7 @@ app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-enco
 
 app.use('/api', UserRouter); 
 app.use('/admin', adminRouter);
-
+app.use('/auth', AuthRouter);
 mongoose.connect(process.env.MONGODB_URI, {
     dbName: 'Articals',
     dbName: 'Fox-user',
