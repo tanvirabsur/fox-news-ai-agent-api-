@@ -23,11 +23,10 @@ const Dashboard = async (req, res) => {
 
 const TotallBlogs = async (req, res) => {
     try {
-        const articles = await articals.find().lean();
-
+        const art = await articals.find();
         res.json({
-            total: articles.length,
-            articles: articles
+            total: art.length,
+            articles: art
         });
     } catch (error) {
         res.status(500).json({
@@ -61,9 +60,9 @@ const AllUsers = async (req, res) => {
 const specificArticle = async (req, res) => {
     const { id } = req.params;
     // Logic to fetch specific article by ID
-    const article = await articals.findOne({ _id: id });
+    const article = await articals.findOne({ id: id });
     if (!article) {
-        return res.status(404).json({ message: 'Article not found' });
+        return res.status(404).json({ message: 'Article not found', id: id });
     }
     res.json(article);
 }

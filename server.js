@@ -5,11 +5,12 @@ const { UserRouter } = require('./Routes/User.routes');
 const mongoose = require('mongoose');
 const { createArticleFromRSS } = require('./controllers/Admin.controllers/create.artical');
 const { AuthRouter } = require('./Routes/auth.route');
-
+const cors = require('cors');
 
 const app = express(); 
 const PORT = process.env.APP_PORT || 8080; 
 
+app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded bodies
 
@@ -18,7 +19,7 @@ app.use('/admin', adminRouter);
 app.use('/auth', AuthRouter);
 mongoose.connect(process.env.MONGODB_URI, {
     dbName: 'Articals',
-    dbName: 'Fox-user',
+    // dbName: 'Fox-user',
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));

@@ -49,6 +49,6 @@ const NewsSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-const articals = mongoose.model("Articals", NewsSchema, "Articals");
+const articals = mongoose.model("Articals", NewsSchema, "news");
 
 module.exports = { articals };

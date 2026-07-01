@@ -65,6 +65,17 @@ const exploreSourceArticles = async (req, res) => {
 };
 
 
+const BlogsFromSquarespaceUseRSS = async (req, res) => {
+    try{
+
+    } catch (error) {
+        res.status(500).json({
+            error: "Failed to fetch blogs from Squarespace",
+        });
+    }
+}
+
+
 module.exports = {
     CreateArticalWithAI,
     createArticleFromRSS,
